@@ -126,41 +126,50 @@
 
     let clienteEditando = null;
 
-    function generarMattCoins() {
-      const resumen = {};
+function generarMattCoins() {
+  const resumen = {};
 
-      clientes.forEach(cliente => {
-        const numero = cliente.numeroCliente || "Sin número";
-        if (!resumen[numero]) {
-          resumen[numero] = {
-            numero,
-            compras: 0,
-            mattcoinsUsadas: 0
-          };
-        }
-        resumen[numero].compras += 1;
-      });
-
-      return resumen;
+  clientes.forEach(cliente => {
+    const numero = cliente.numeroCliente || "Sin número";
+    if (!resumen[numero]) {
+      resumen[numero] = {
+        numero,
+        compras: 0,
+        mattcoinsUsadas: 0
+      };
     }
+    resumen[numero].compras += 1;
+  });
 
-    function renderCards() {
-      cardContainer.innerHTML = "";
-      const datos = generarMattCoins();
-
-      Object.values(datos).forEach(data => {
-        const tarjeta = document.createElement("div");
-        tarjeta.className = "card";
-        tarjeta.innerHTML = `
-          <p>📱 Número: ${data.numero}</p>
-          <p>🛍️ Compras: ${data.compras}</p>
-          <p>💰 MattCoins Totales: ${data.compras * 15}</p>
-          <p>❌ MattCoins usadas/expiradas: ${data.mattcoinsUsadas || 0}</p>
-          <button class="edit-button" onclick='editar("${data.numero}")'>Editar</button>
-        `;
-        cardContainer.appendChild(tarjeta);
-      });
+  // Aplicar datos extra editados manualmente si existen
+  const extra = JSON.parse(localStorage.getItem("mattcoinsExtra")) || {};
+  for (const numero in extra) {
+    if (resumen[numero]) {
+      resumen[numero].compras = extra[numero].compras;
+      resumen[numero].mattcoinsUsadas = extra[numero].mattcoinsUsadas || 0;
     }
+  }
+
+  return resumen;
+}
+
+function renderCards() {
+  cardContainer.innerHTML = "";
+const datos = generarMattCoins();
+
+  Object.values(datos).forEach(data => {
+    const tarjeta = document.createElement("div");
+    tarjeta.className = "card";
+    tarjeta.innerHTML = `
+      <p>📱 Número: ${data.numero}</p>
+      <p>🛍️ Compras: ${data.compras}</p>
+      <p>💰 MattCoins Totales: ${data.compras * 15}</p>
+      <p>❌ MattCoins usadas/expiradas: ${data.mattcoinsUsadas || 0}</p>
+      <button class="edit-button" onclick='editar("${data.numero}")'>Editar</button>
+    `;
+    cardContainer.appendChild(tarjeta);
+  });
+}
 
     function editar(numero) {
       clienteEditando = numero;
@@ -184,21 +193,6 @@
       localStorage.setItem("mattcoinsExtra", JSON.stringify(resumen));
       modal.style.display = "none";
       renderCards();
-    }
-
-    // Si hay edición previa guardada, aplicar
-    function aplicarCambiosPrevios() {
-      const extra = JSON.parse(localStorage.getItem("mattcoinsExtra")) || {};
-      const resumen = generarMattCoins();
-
-      for (const num in extra) {
-        if (resumen[num]) {
-          resumen[num].compras = extra[num].compras;
-          resumen[num].mattcoinsUsadas = extra[num].mattcoinsUsadas;
-        }
-      }
-
-      return resumen;
     }
 
     // Cerrar modal al hacer clic fuera
