@@ -2,71 +2,89 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>MattCoins - MattStore</title>
   <style>
     body {
-      margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background-color: #f4f6f9;
+      background: #f1f1f1;
+      margin: 0;
       padding: 20px;
     }
+
     h1 {
       text-align: center;
-      margin-bottom: 20px;
+      color: #333;
     }
-    .coin-card {
-      background-color: #fff;
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      margin-bottom: 12px;
+
+    .contenedor {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 30px;
     }
-    .coin-card p {
-      margin: 6px 0;
+
+    .tarjeta {
+      background: #fff;
+      padding: 15px 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 220px;
     }
-    .coin-card input {
-      padding: 6px;
-      width: 100%;
-      border-radius: 6px;
+
+    .tarjeta p {
+      margin: 8px 0;
+      font-size: 15px;
+    }
+
+    .editable {
       border: 1px solid #ccc;
-      margin-top: 4px;
+      padding: 4px 6px;
+      border-radius: 6px;
+      width: 100%;
     }
   </style>
 </head>
 <body>
-  <h1>💰 Panel de MattCoins</h1>
-  <div id="coin-list"></div>
+  <h1>💰 MattCoins</h1>
+  <div class="contenedor" id="contenedor-mattcoins"></div>
 
   <script>
+    // Obtener clientes del localStorage
     const clientes = JSON.parse(localStorage.getItem("clientes")) || [];
 
-    function calcularMattCoins(cliente) {
-      const productos = cliente.productoComprado || "";
-      const compras = productos.split(",").filter(p => p.trim() !== "").length;
-      const mattcoins = compras * 15;
-      return { compras, mattcoins };
-    }
+    // Agrupar por número de cliente
+    const resumen = {};
 
-    function mostrarMattCoins() {
-      const container = document.getElementById("coin-list");
-      container.innerHTML = "";
-      clientes.forEach(cliente => {
-        const { compras, mattcoins } = calcularMattCoins(cliente);
-        const card = document.createElement("div");
-        card.className = "coin-card";
-        card.innerHTML = `
-          <p><strong>Número de cliente:</strong> ${cliente.numero}</p>
-          <p><strong>Compras:</strong> ${compras}</p>
-          <p><strong>MattCoins Totales:</strong> ${mattcoins}</p>
-          <p><strong>MattCoins usadas o expiradas:</strong></p>
-          <input type="text" placeholder="Ej. 0, 15, etc..." />
-        `;
-        container.appendChild(card);
-      });
-    }
+    clientes.forEach(cliente => {
+      const numero = cliente.numeroCliente;
+      if (!resumen[numero]) {
+        resumen[numero] = { compras: 0 };
+      }
+      resumen[numero].compras++;
+    });
 
-    mostrarMattCoins();
+    // Mostrar tarjetas
+    const contenedor = document.getElementById("contenedor-mattcoins");
+
+    Object.entries(resumen).forEach(([numero, data]) => {
+      const totalMattcoins = data.compras * 15;
+
+      const tarjeta = document.createElement("div");
+      tarjeta.className = "tarjeta";
+
+      tarjeta.innerHTML = `
+        <p>📱 <strong>Número:</strong> ${numero}</p>
+        <p>🛍️ <strong>Compras:</strong> ${data.compras}</p>
+        <p>💰 <strong>MattCoins Totales:</strong> ${totalMattcoins}</p>
+        <p>❌ <strong>MattCoins usadas/expiradas:</strong><br>
+          <input type="text" class="editable" placeholder="Editar aquí" />
+        </p>
+      `;
+
+      contenedor.appendChild(tarjeta);
+    });
   </script>
 </body>
 </html>
