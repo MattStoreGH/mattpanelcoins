@@ -153,21 +153,45 @@ function generarMattCoins() {
   return resumen;
 }
 
-function renderCards() {
-  cardContainer.innerHTML = "";
-const datos = generarMattCoins();
+function renderMattCoinsCards() {
+  const container = document.getElementById("mattcoins-cards");
+  container.innerHTML = "";
 
-  Object.values(datos).forEach(data => {
-    const tarjeta = document.createElement("div");
-    tarjeta.className = "card";
-    tarjeta.innerHTML = `
-      <p>📱 Número: ${data.numero}</p>
-      <p>🛍️ Compras: ${data.compras}</p>
-      <p>💰 MattCoins Totales: ${data.compras * 15}</p>
-      <p>❌ MattCoins usadas/expiradas: ${data.mattcoinsUsadas || 0}</p>
-      <button class="edit-button" onclick='editar("${data.numero}")'>Editar</button>
+  const clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+
+  const clientesUnicos = {};
+
+  // Agrupar por número de cliente
+  clientes.forEach(cliente => {
+    const numero = cliente.numero || "Sin número";
+
+    if (!clientesUnicos[numero]) {
+      clientesUnicos[numero] = {
+        compras: 0,
+        mattcoins: 0,
+        usadas: 0,
+      };
+    }
+
+    clientesUnicos[numero].compras += 1;
+    clientesUnicos[numero].mattcoins += cliente.mattcoins || 0;
+    clientesUnicos[numero].usadas += cliente.usadas || 0;
+  });
+
+  // Crear una tarjeta por cliente único
+  Object.entries(clientesUnicos).forEach(([numero, datos]) => {
+    const card = document.createElement("div");
+    card.className = "bg-white p-6 rounded-2xl shadow mb-4";
+
+    card.innerHTML = `
+      <p>🧾 <strong>Número:</strong> ${numero}</p>
+      <p>📂 <strong>Compras:</strong> ${datos.compras}</p>
+      <p>🥇 <strong>MattCoins Totales:</strong> ${datos.mattcoins}</p>
+      <p>❌ <strong>MattCoins usadas/expiradas:</strong> ${datos.usadas}</p>
+      <button class="mt-4 w-full bg-blue-700 hover:bg-blue-800 text-white py-2 px-4 rounded" onclick="editarCliente('${numero}')">Editar</button>
     `;
-    cardContainer.appendChild(tarjeta);
+
+    container.appendChild(card);
   });
 }
 
